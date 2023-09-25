@@ -58,12 +58,8 @@ def logRirt(alpha, m_h, teff):
         return np.nan
     
     c = coeffs(m_h)
-    return np.polynomial.Polynomial(c)(np.log10(teff)) + np.log10(alpha)
-
-
-if __name__ == "__main__":
-    np.random.seed(88)
-    a = np.random.uniform(0, 0.5, 100)
-    mh = np.random.uniform(-0.5, 0.5, 100)
-    te = np.random.uniform(3000, 7000, 100)
-    print(logRirt(a, mh, te))
+    logR = np.polynomial.Polynomial(c)(np.log10(teff)) + np.log10(alpha)
+    if logR.size == 1:
+        return logR.item()
+    else:
+        return logR
