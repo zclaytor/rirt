@@ -28,7 +28,6 @@ coeff_table = np.transpose([
 coeffs = interp1d(m_h, coeff_table)
 
 
-@np.vectorize
 def logRirt(alpha, m_h, teff):
     """
     Compute the log of the R'_IRT index.
@@ -40,7 +39,7 @@ def logRirt(alpha, m_h, teff):
         teff (float): the effective temperature in kelvins.
 
     Returns:
-        logR (float): the log10 of the R'_IRT index.
+        logR (float or numpy.ndarray): the log10 of the R'_IRT index.
 
     Note:
         This function requires that `alpha` be positive since it is a width
@@ -54,12 +53,21 @@ def logRirt(alpha, m_h, teff):
         stars from 3000 to 7000 K. Take caution for stars with Teff outside
         this range.
     """
+    logR = _logR(alpha, m_h, teff)
+
+    if logR.size == 1:
+        return logR.item()
+    else:
+        return logR
+    
+
+@np.vectorize
+def _logR(alpha, m_h, teff):
+    """Convenience function to vectorize `logRirt`.
+    """
     if (m_h <= -0.5) or (m_h >= 0.5) or (alpha <= 0):
         return np.nan
     
     c = coeffs(m_h)
     logR = np.polynomial.Polynomial(c)(np.log10(teff)) + np.log10(alpha)
-    if logR.size == 1:
-        return logR.item()
-    else:
-        return logR
+    return logR
